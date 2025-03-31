@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
+    "baseUrl": ".",
+    "module": "es2015",
+    "moduleResolution": "node",
+
+    "paths": {
+      "@/*": ["lib/*"]
+    },
+    "typeRoots": ["node_modules/@types"],
+    /* Bundler mode */
+    "allowImportingTsExtensions": true,
+
+    /* Linting */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "noEmit": true,
+    "outDir": "dist/lib",
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["lib"]
+}
