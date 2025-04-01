@@ -17,7 +17,7 @@ export default isXHRAdapterSupported && function xhr(config: OxiosRequestConfig)
       baseURL,
       auth,
       timeout,
-      headers,
+      headers = {},
       params,
       paramsSerializer,
       responseType,

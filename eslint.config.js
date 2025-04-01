@@ -3,7 +3,7 @@ import linter from '@antfu/eslint-config';
 export default linter({
   type: 'lib',
   vue: false,
-  ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/.vitepress/cache/**','**/lib/helpers/**'],
+  ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/.vitepress/cache/**', '**/lib/helpers/**'],
   rules: {
     // 圈复杂度最大为 15
     'complexity': [2, { max: 15 }],

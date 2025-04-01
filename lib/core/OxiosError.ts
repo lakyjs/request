@@ -10,14 +10,14 @@ export default class OxiosError extends Error implements IOxiosError {
   constructor(
     message: string,
     public code: OxiosErrorCode | null,
-    public config: OxiosRequestConfig,
+    public config?: OxiosRequestConfig,
     public request?: XMLHttpRequest | ClientRequest,
     public response?: OxiosResponse
   ) {
     super(message);
 
     // Nodejs 环境下，可以使用 Error.captureStackTrace 方法
-    if (isFunction(Error.captureStackTrace)) {
+    if (Error?.captureStackTrace && isFunction?.(Error.captureStackTrace)) {
       Error.captureStackTrace(this, this.constructor);
     }
     // 浏览器环境

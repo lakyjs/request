@@ -13,7 +13,7 @@ export function transformData(this: OxiosRequestConfig, fns: OxiosTransformer | 
   if (!isArray(fns))
     fns = [fns];
 
-  fns.forEach(fn => data = fn.call(config, data, headers, response ? response.status : void 0));
+  fns.forEach(fn => data = fn?.call?.(config, data, headers, response ? response.status : void 0));
 
   return data;
 }

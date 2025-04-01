@@ -32,6 +32,7 @@ const stratMap = new Map<string, StratFn>([
   ['url', fromVal2Strat],
   ['params', fromVal2Strat],
   ['data', fromVal2Strat],
+  ['method', fromVal2Strat],
   ['headers', deepMergeStrat],
   ['auth', deepMergeStrat],
 ]);
@@ -47,7 +48,7 @@ export default function mergeConfig(
 
   const mergeField = (key: string): void => {
     const strat = stratMap.get(key) ?? defaultStrat;
-    result[key] = strat(config1[key], config2[key]);
+    result[key] = strat(config1[key], config2[key]) ?? defaultStrat(config1[key], config2[key]);
   };
 
   for (const key in Object.assign({}, config1, config2)) {

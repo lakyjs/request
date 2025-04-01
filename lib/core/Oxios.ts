@@ -18,7 +18,6 @@ type PromiseChain<T> = PromiseChainNode<T>[];
 export default class Oxios implements IOxios {
   defaults: OxiosRequestConfig;
   interceptors: OxiosInterceptor;
-  // oIntercepters: OnionInterceptor;
   constructor(initConfig: OxiosRequestConfig) {
     this.defaults = initConfig;
     this.interceptors = createInterceptor() as OxiosInterceptor;

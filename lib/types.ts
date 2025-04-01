@@ -89,7 +89,7 @@ export type OxiosErrorCode =
 
 export interface OxiosError extends Error {
   isOxiosError: boolean
-  config: OxiosRequestConfig
+  config?: OxiosRequestConfig
   code?: OxiosErrorCode | null
   request?: XMLHttpRequest | ClientRequest
   response?: OxiosResponse
@@ -161,7 +161,7 @@ export interface CancelToken {
 }
 
 export interface Canceler {
-  (message: string, config: OxiosRequestConfig, request: XMLHttpRequest | ClientRequest): void
+  (message: string, config?: OxiosRequestConfig, request?: XMLHttpRequest | ClientRequest): void
 }
 
 export interface CancelExecutor {
@@ -169,7 +169,7 @@ export interface CancelExecutor {
 }
 
 export interface CancelTokenSource {
-  token: CancelToken
+  token: CancelTokenClass
   cancel: Canceler
 }
 

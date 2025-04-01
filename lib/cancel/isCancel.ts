@@ -1,5 +1,6 @@
 import CancelError from "./CancelError";
+import OxiosError from "@/core/OxiosError";
 
 export default function isCancel(val: unknown): val is CancelError {
-  return val instanceof CancelError && val.__CANCEL__ === true;
+  return val instanceof OxiosError && (val as CancelError).__CANCEL__ === true;
 }
