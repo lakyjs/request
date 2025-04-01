@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import InterceptorManager from '@/core/InterceptorManager';
 import type { ResolvedFn } from '@/index';
+import InterceptorManager from '@/core/InterceptorManager';
+import { describe, expect, it, vi } from 'vitest';
 
-describe('InterceptorManager', () => {
+describe('interceptorManager', () => {
   it('should add an interceptor using use() and return its id', () => {
     const manager = new InterceptorManager<string>();
     const resolvedFn = vi.fn();

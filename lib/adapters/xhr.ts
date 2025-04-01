@@ -45,7 +45,7 @@ export default isXHRAdapterSupported && function xhr(config: OxiosRequestConfig)
       if (request.status === 0)
         return;
 
-      const responseHeaders = request.getAllResponseHeaders();
+      const responseHeaders = request?.getAllResponseHeaders?.();
       const responseData = responseType && responseType !== 'text' ? request.response : request.responseText;
       const response: OxiosResponse = {
         data: responseData,
@@ -86,7 +86,7 @@ export default isXHRAdapterSupported && function xhr(config: OxiosRequestConfig)
         createError(
           `Timeout of ${timeout} ms exceeded`,
           config,
-          ErrorCodes.ERR_TIMEOUT.value,
+          ErrorCodes?.ERR_TIMEOUT?.value,
           request
         )
       );

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
 import buildFullPath from '@/core/buildFullPath';
+import { describe, expect, it } from 'vitest';
 
 describe('buildFullPath', () => {
   it('should return the requestedURL if it is an absolute URL', () => {
@@ -15,7 +15,7 @@ describe('buildFullPath', () => {
   });
 
   it('should return the requestedURL if baseURL is undefined', () => {
-    const baseURL = undefined;
+    const baseURL = void 0;
     const requestedURL = '/path/to/resource';
     expect(buildFullPath(baseURL, requestedURL)).toBe(requestedURL);
   });

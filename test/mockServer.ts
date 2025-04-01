@@ -1,8 +1,7 @@
 import { setupServer } from 'msw/node';
-import { beforeAll, afterAll, afterEach } from 'vitest'
+import { afterAll, afterEach, beforeAll } from 'vitest';
 
-export const server = setupServer()
-
+export const server = setupServer();
 
 // 所有测试之前启动 mock server
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));

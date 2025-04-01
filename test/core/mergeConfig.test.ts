@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import mergeConfig from '../../lib/core/mergeConfig';
 import type { OxiosRequestConfig } from '@/types';
+import { describe, expect, it } from 'vitest';
+import mergeConfig from '../../lib/core/mergeConfig';
 
 describe('mergeConfig', () => {
   it('should return config1 if config2 is not provided', () => {
@@ -39,7 +39,7 @@ describe('mergeConfig', () => {
 
   it('should handle nil values correctly', () => {
     const config1: OxiosRequestConfig = { url: '/test', method: 'get' };
-    const config2: OxiosRequestConfig = { url: void 0, method: undefined };
+    const config2: OxiosRequestConfig = { url: void 0, method: void 0 };
     const result = mergeConfig(config1, config2);
     expect(result).toEqual({ url: '/test', method: 'get' });
   });
@@ -58,14 +58,14 @@ describe('mergeConfig', () => {
 
   it('should return val1 if val2 is nil and val1 is not nil', () => {
     const config1: OxiosRequestConfig = { url: '/test', method: 'get' };
-    const config2: OxiosRequestConfig = { url: undefined, method: undefined };
+    const config2: OxiosRequestConfig = { url: void 0, method: void 0 };
     const result = mergeConfig(config1, config2);
     expect(result).toEqual({ url: '/test', method: 'get' });
   });
 
   it('should return val1 if val2 is nil and val1 is a plain object', () => {
     const config1: OxiosRequestConfig = { headers: { common: { Accept: 'application/json' } } };
-    const config2: OxiosRequestConfig = { headers: undefined };
+    const config2: OxiosRequestConfig = { headers: void 0 };
     const result = mergeConfig(config1, config2);
     expect(result).toEqual({
       headers: {
@@ -78,23 +78,22 @@ describe('mergeConfig', () => {
 
   it('should return val1 if val2 is nil and val1 is a primitive value', () => {
     const config1: OxiosRequestConfig = { timeout: 1000 };
-    const config2: OxiosRequestConfig = { timeout: undefined };
+    const config2: OxiosRequestConfig = { timeout: void 0 };
     const result = mergeConfig(config1, config2);
     expect(result).toEqual({ timeout: 1000 });
   });
 
-  it('should return val1 if val2 is nil and val1 is not a plain object with deepMergeStrat',()=>{
+  it('should return val1 if val2 is nil and val1 is not a plain object with deepMergeStrat', () => {
     const config1: any = { headers: 'nothing' };
     const config2: OxiosRequestConfig = { headers: void 0 };
     const result = mergeConfig(config1, config2);
     expect(result).toEqual({ headers: 'nothing' });
-  })
+  });
 
   it('should return val2 if val2 is not nil and plain object with deepMergeStrat', () => {
     const config1: any = { headers: 'nothing' };
     const config2: any = { headers: 'noting too' };
     const result = mergeConfig(config1, config2);
     expect(result).toEqual({ headers: 'noting too' });
-  })
-
+  });
 });

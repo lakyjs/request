@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import { toJSONObject, kindOf, extend, deepMerge, getPrototypeOf } from '@/helpers'
+/* eslint-disable unicorn/error-message */
+/* eslint-disable prefer-regex-literals */
+/* eslint-disable max-lines */
+import { deepMerge, extend, getPrototypeOf, kindOf, toJSONObject } from '@/helpers';
+import { describe, expect, it } from 'vitest';
 
 describe('helpers:index', () => {
-
   describe('toJSONObject', () => {
     it('should convert a plain object to a JSON-compatible object', () => {
       const obj = { foo: 'bar', baz: 42 };
@@ -44,7 +46,7 @@ describe('helpers:index', () => {
       expect(toJSONObject(42)).toBe(42);
       expect(toJSONObject('foo')).toBe('foo');
       expect(toJSONObject(null)).toBe(null);
-      expect(toJSONObject(undefined)).toBe(undefined);
+      expect(toJSONObject(void 0)).toBe(void 0);
     });
 
     it('should handle deep nested objects with arrays', () => {
@@ -59,7 +61,7 @@ describe('helpers:index', () => {
     });
 
     it('should handle objects with undefined values', () => {
-      const obj = { foo: undefined, bar: 42 };
+      const obj = { foo: void 0, bar: 42 };
       const result = toJSONObject(obj);
       expect(result).toEqual({ bar: 42 }); // Undefined values should be omitted
     });
@@ -70,7 +72,7 @@ describe('helpers:index', () => {
       const result = toJSONObject(obj);
       expect(result).toEqual({ foo: 'bar' }); // Symbols should be omitted
     });
-  })
+  });
 
   describe('kindOf', () => {
     it('should return "array" for arrays', () => {
@@ -91,7 +93,7 @@ describe('helpers:index', () => {
     it('should return "number" for numbers', () => {
       expect(kindOf(0)).toBe('number');
       expect(kindOf(42)).toBe('number');
-      expect(kindOf(NaN)).toBe('number');
+      expect(kindOf(Number.NaN)).toBe('number');
     });
 
     it('should return "boolean" for booleans', () => {
@@ -104,12 +106,12 @@ describe('helpers:index', () => {
     });
 
     it('should return "undefined" for undefined', () => {
-      expect(kindOf(undefined)).toBe('undefined');
+      expect(kindOf(void 0)).toBe('undefined');
     });
 
     it('should return "function" for functions', () => {
       expect(kindOf(() => { })).toBe('function');
-      expect(kindOf(function test() { })).toBe('function');
+      expect(kindOf(() => { })).toBe('function');
     });
 
     it('should return "date" for Date objects', () => {
@@ -196,7 +198,7 @@ describe('helpers:index', () => {
     it('should return "promise" for Promise objects', () => {
       expect(kindOf(Promise.resolve())).toBe('promise');
     });
-  })
+  });
 
   describe('extend', () => {
     it('should copy properties from one object to another', () => {
@@ -248,10 +250,10 @@ describe('helpers:index', () => {
 
     it('should handle multiple properties and types', () => {
       const target = { a: 1 };
-      const source = { b: 'string', c: true, d: null, e: undefined };
+      const source = { b: 'string', c: true, d: null, e: void 0 };
       const result = extend(target, source);
 
-      expect(result).toEqual({ a: 1, b: 'string', c: true, d: null, e: undefined });
+      expect(result).toEqual({ a: 1, b: 'string', c: true, d: null, e: void 0 });
     });
   });
 
@@ -335,7 +337,7 @@ describe('helpers:index', () => {
     it('should handle non-object values gracefully', () => {
       const obj1 = { a: 1 };
       const obj2 = null;
-      const obj3 = undefined;
+      const obj3 = void 0;
       const result = deepMerge(obj1, obj2, obj3);
 
       expect(result).toEqual({ a: 1 });
@@ -343,7 +345,6 @@ describe('helpers:index', () => {
   });
 
   describe('getPrototypeOf', () => {
-
     it('should return the prototype of an object', () => {
       const obj = { a: 1 };
       const proto = Object.getPrototypeOf(obj);
@@ -356,6 +357,5 @@ describe('helpers:index', () => {
 
       expect(getPrototypeOf(obj)).toBe(null);
     });
-
-  })
-})
+  });
+});

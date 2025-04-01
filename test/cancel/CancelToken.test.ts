@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
 import CancelToken from '@/cancel/CancelToken';
 import isCancel from '@/cancel/isCancel';
+import { describe, expect, it, vi } from 'vitest';
 
-describe('CancelToken', () => {
+describe('cancelToken', () => {
   it('should resolve the promise when canceled', async () => {
     const executor = vi.fn();
     const token = new CancelToken(executor);
@@ -20,7 +20,8 @@ describe('CancelToken', () => {
 
     try {
       token.throwIfRequested();
-    } catch (error) {
+    }
+    catch (error) {
       expect(isCancel(error)).toBe(true);
       expect(error.message).toBe('Operation canceled');
     }
@@ -30,7 +31,8 @@ describe('CancelToken', () => {
 
     try {
       token2.throwIfRequested();
-    } catch (error) {
+    }
+    catch (error) {
       listener(error);
     }
 
@@ -43,11 +45,10 @@ describe('CancelToken', () => {
     const listener1 = vi.fn();
     const listener2 = vi.fn();
 
-
     token.subscribe(listener1);
     token.subscribe(listener2);
 
-    cancel()
+    cancel();
     await token.promise;
     expect(listener1).toHaveBeenCalled();
     expect(listener2).toHaveBeenCalled();
@@ -101,7 +102,7 @@ describe('CancelToken', () => {
 
     // Simulate cancellation
     const cancelError = new Error('Operation canceled') as any;
-    token['_listeners']?.forEach(l => l(cancelError));
+    (token as any)._listeners?.forEach(l => l(cancelError));
 
     expect(listener).not.toHaveBeenCalled();
   });
@@ -117,7 +118,7 @@ describe('CancelToken', () => {
 
     // Simulate cancellation
     const cancelError = new Error('Operation canceled') as any;
-    token['_listeners']?.forEach(l => l(cancelError));
+    (token as any)._listeners?.forEach(l => l(cancelError));
 
     expect(listener1).not.toHaveBeenCalled();
     expect(listener2).toHaveBeenCalledWith(cancelError);
@@ -164,7 +165,7 @@ describe('CancelToken', () => {
 
     await token.promise;
 
-    expect(token['_listeners']).toBeUndefined();
+    expect((token as any)._listeners).toBeUndefined();
   });
 
   it('should not notify listeners if already canceled', async () => {
@@ -181,9 +182,9 @@ describe('CancelToken', () => {
     cancel('Operation canceled again');
 
     setTimeout(() => {
-      expect(listener).toBeCalledTimes(1)
-      expect(token.reason.message).toBe('Operation canceled')
-    })
+      expect(listener).toBeCalledTimes(1);
+      expect(token.reason.message).toBe('Operation canceled');
+    });
   });
 
   it('should not resolve the promise if not canceled', () => {
@@ -193,5 +194,4 @@ describe('CancelToken', () => {
     expect(token.reason).toBeUndefined();
     expect(token.promise).toBeInstanceOf(Promise);
   });
-
 });

@@ -33,5 +33,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["lib", "test/core/transformData.test.ts", "test/core/mergeConfig.test.ts", "test/core/dispatchRequest.test.ts", "test/cancel/CancelToken.test.ts", "test/cancel/CancelError.test.ts", "test/cancel/isCancel.test.ts", "test/core/OxiosError.test.ts", "test/core/InterceptorManager.test.ts", "test/core/buildFullPath.test.ts", "test/core/Oxios.test.ts"]
+  "include": ["lib", "test/core/transformData.test.ts", "test/core/mergeConfig.test.ts", "test/core/dispatchRequest.test.ts", "test/cancel/CancelToken.test.ts", "test/cancel/CancelError.test.ts", "test/cancel/isCancel.test.ts", "test/core/OxiosError.test.ts", "test/core/InterceptorManager.test.ts", "test/core/buildFullPath.test.ts", "test/core/Oxios.test.ts", "test/adapters/xhr.test.ts"]
 }

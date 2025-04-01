@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
 import CancelError from '@/cancel/CancelError';
-import { ErrorCodes } from '@/core/OxiosError';
 import isCancel from '@/cancel/isCancel';
+import { ErrorCodes } from '@/core/OxiosError';
 import oxios from '@/index';
+import { describe, expect, it } from 'vitest';
 
-describe('CancelError', () => {
+describe('cancelError', () => {
   it('should create an instance of CancelError with default message when no message is provided', () => {
     const error = new CancelError(null);
     expect(isCancel(error)).toBe(true);
