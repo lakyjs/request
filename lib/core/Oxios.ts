@@ -51,7 +51,7 @@ export default class Oxios implements IOxios {
                 _ctx.res = err?.response ?? err;
                 return Promise.reject(err);
               })
-              .finally(next)
+              .finally(() => next())
         ));
       },
       rejected: void 0

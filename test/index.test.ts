@@ -1,5 +1,11 @@
 /* eslint-disable max-lines */
-import type { OxiosError, OxiosResponse } from '@/index';
+import type { InterceptorMiddleware, OxiosError, OxiosRequestConfig, OxiosResponse } from '@/index';
+import type { Context, Next } from 'onion-interceptor';
+import CancelError from '@/cancel/CancelError';
+import CancelToken from '@/cancel/CancelToken';
+import isCancel from '@/cancel/isCancel';
+import Oxios from '@/core/Oxios';
+import { isOxiosError } from '@/helpers';
 import oxios from '@/index';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
@@ -267,11 +273,13 @@ describe('requests', () => {
     });
   });
 
-  it('should handle request interceptors', () => {
-    oxios.interceptors.request.use(config => {
+  it('should handle request interceptors', async () => {
+    const interceptor = vi.fn((config: OxiosRequestConfig) => {
+      expect(config.url).toBe('http://foo');
       config.headers['X-Intercepted'] = 'true';
       return config;
     });
+    const interceptorId = oxios.interceptors.request.use(interceptor);
 
     server.use(
       http.get('http://foo', ({ request }) => {
@@ -280,17 +288,23 @@ describe('requests', () => {
       })
     );
 
-    return oxios.get('http://foo').then((res: OxiosResponse) => {
-      expect(res.status).toBe(200);
-      expect(res.data.msg).toBe('bar');
-    });
+    const res = await oxios.get('http://foo');
+    expect(res.status).toBe(200);
+    expect(res.data.msg).toBe('bar');
+    expect(res.config.headers['X-Intercepted']).toBe('true');
+    expect(interceptor).toHaveBeenCalled();
+
+    oxios.interceptors.request.eject(interceptorId);
   });
 
-  it('should handle response interceptors', () => {
-    oxios.interceptors.response.use(response => {
+  it('should handle response interceptors', async () => {
+    const interceptor = vi.fn((response: OxiosResponse) => {
+      expect(response.data.msg).toBe('bar');
       response.data.val = 'intercepted';
+      response.data.msg = 'baz';
       return response;
     });
+    const interceptorId = oxios.interceptors.response.use(interceptor);
 
     server.use(
       http.get('http://foo', () => {
@@ -298,10 +312,56 @@ describe('requests', () => {
       })
     );
 
-    oxios.get('http://foo').then((res: OxiosResponse) => {
-      expect(res.status).toBe(200);
-      expect(res.data.val).toBe('intercepted');
-    });
+    const res = await oxios.get('http://foo');
+    expect(res.status).toBe(200);
+    expect(res.data.val).toBe('intercepted');
+    expect(res.data.msg).toBe('baz');
+    expect(interceptor).toHaveBeenCalled();
+
+    oxios.interceptors.response.eject(interceptorId);
+  });
+
+  it('should handle onion-interceptor', async () => {
+    const arr = [];
+    const interceptor1 = vi.fn(async (ctx: Context, next: Next) => {
+      arr.push('interceptor1 in');
+      (ctx.args as OxiosRequestConfig).headers['X-Test'] = 'true';
+      expect((ctx.args as OxiosRequestConfig).url).toBe('http://foo');
+      await next();
+      arr.push('interceptor1 out');
+      ctx.res.data.msg = 'baz';
+      ctx.res.data.val = 'intercepted';
+    }) as unknown as InterceptorMiddleware;
+    const interceptor2 = vi.fn(async (ctx: Context, next: Next) => {
+      expect((ctx.args as OxiosRequestConfig).headers['X-Test']).toBe('true');
+      arr.push('interceptor2 in');
+      await next();
+      arr.push('interceptor2 out');
+    }) as unknown as InterceptorMiddleware;
+
+    oxios.interceptors.use(interceptor1, interceptor2);
+
+    server.use(
+      http.get('http://foo', () => {
+        return HttpResponse.json({ msg: 'bar' }, { status: 200 });
+      })
+    );
+
+    const res = await oxios.get('http://foo');
+
+    expect(arr).toEqual(['interceptor1 in', 'interceptor2 in', 'interceptor2 out', 'interceptor1 out']);
+    expect(interceptor1).toHaveBeenCalledOnce();
+    expect(interceptor2).toHaveBeenCalledOnce();
+    expect(res.data.msg).toBe('baz');
+    expect(res.data.val).toBe('intercepted');
+
+    oxios.interceptors?.eject?.(interceptor1, interceptor2);
+    const _res = await oxios.get('http://foo');
+
+    expect(_res.data.msg).toBe('bar');
+
+    expect(interceptor1).toHaveBeenCalledOnce();
+    expect(interceptor2).toHaveBeenCalledOnce();
   });
 });
 
@@ -311,30 +371,68 @@ describe('oxios object', () => {
       baseURL: 'http://foo',
       timeout: 1000
     });
+
     expect(instance.defaults.baseURL).toBe('http://foo');
     expect(instance.defaults.timeout).toBe(1000);
+    expect(instance.interceptors).toBeDefined();
 
     expect(instance.get).toBeDefined();
+    expect(instance.delete).toBeDefined();
+    expect(instance.head).toBeDefined();
+    expect(instance.options).toBeDefined();
+
     expect(instance.post).toBeDefined();
     expect(instance.put).toBeDefined();
-    expect(instance.delete).toBeDefined();
+    expect(instance.patch).toBeDefined();
     expect(instance.postForm).toBeDefined();
     expect(instance.putForm).toBeDefined();
+    expect(instance.patchForm).toBeDefined();
   });
 
   it('should have default config', () => {
     expect(oxios.defaults.timeout).toBe(0);
     expect(oxios.defaults.method).toBe('GET');
+    expect(oxios.defaults.adapter).toBe('xhr');
     expect(oxios.defaults.xsrfCookieName).toBe('XSRF-TOKEN');
     expect(oxios.defaults.xsrfHeaderName).toBe('X-XSRF-TOKEN');
+    expect(oxios.defaults.headers.common.Accept).toBe('application/json, text/plain, */*');
+    expect(oxios.defaults.validateStatus).toBeDefined();
+    expect(oxios.defaults.transformRequest?.length).toBeTruthy();
+    expect(oxios.defaults.transformResponse?.length).toBeTruthy();
+
+    // test validateStatus
+    expect(oxios.defaults.validateStatus(199)).toBeFalsy();
+    expect(oxios.defaults.validateStatus(200)).toBeTruthy();
+    expect(oxios.defaults.validateStatus(201)).toBeTruthy();
+    expect(oxios.defaults.validateStatus(299.99)).toBeTruthy();
+    expect(oxios.defaults.validateStatus(300)).toBeFalsy();
+    expect(oxios.defaults.validateStatus(400)).toBeFalsy();
+    expect(oxios.defaults.validateStatus(500)).toBeFalsy();
+
+    const mockHeaders = { k: 'v' };
+
+    // test transformRequest
+    expect(oxios.defaults.transformRequest?.[0]({ foo: 'bar' }, mockHeaders)).toBe('{"foo":"bar"}');
+    expect(mockHeaders['Content-Type']).toBe('application/json;charset=utf-8');
+
+    // test transformResponse
+    expect(oxios.defaults.transformResponse?.[0]('{"foo":"bar"}')).toEqual({ foo: 'bar' });
   });
 
   it('should have static methods', () => {
-    expect(oxios.isOxiosError).toBeDefined();
-    expect(oxios.CancelToken).toBeDefined();
-    expect(oxios.isCancel).toBeDefined();
+    expect(oxios.create).toBeDefined();
     expect(oxios.all).toBeDefined();
     expect(oxios.spread).toBeDefined();
+    expect(oxios.CancelToken).toBeDefined();
+    expect(oxios.CancelToken).toEqual(CancelToken);
+    expect(oxios.CancelError).toBeDefined();
+    expect(oxios.CancelError).toEqual(CancelError);
+    expect(oxios.isCancel).toBeDefined();
+    expect(oxios.isCancel).toEqual(isCancel);
+    expect(oxios.isOxiosError).toBeDefined();
+    expect(oxios.isOxiosError).toEqual(isOxiosError);
+    expect(oxios.Oxios).toBeDefined();
+    expect(oxios.Oxios).toEqual(Oxios);
   });
 
   it('should support all', () => {

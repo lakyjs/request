@@ -33,4 +33,16 @@ describe('adapters', () => {
       'Unknown adapter \'invalid\' is specified\nWe know these adapters inside the environment: http, xhr, fetch'
     );
   });
+
+  it('should throw an error if adapter is not a function', () => {
+    expect(() => getAdapter([3 as any])).toThrowError(
+      'adapter is not a function'
+    );
+  });
+
+  it('should throw an error if adapter is false', () => {
+    expect(() => getAdapter([false as any])).toThrowError(
+      `Adapter ${false} is not supported by the environment`
+    );
+  });
 });

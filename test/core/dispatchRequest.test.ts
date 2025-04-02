@@ -53,15 +53,12 @@ describe('dispatchRequest', () => {
     const defaultAdapter = defaults.adapter as (config: OxiosRequestConfig) => OxiosPromise;
     defaults.adapter = (config: OxiosRequestConfig) => {
       hook();
-      return defaultAdapter(config) as OxiosPromise;
+      return adapter(config) as OxiosPromise;
     };
 
-    // eslint-disable-next-line style/max-statements-per-line
-    try { await dispatchRequest(config); }
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    catch (_e) { /* ignore */ }
-    finally {
-      expect(hook).toHaveBeenCalled();
-    }
+    await dispatchRequest(config);
+
+    expect(hook).toHaveBeenCalled();
+    defaults.adapter = defaultAdapter; // Restore the original adapter
   });
 });

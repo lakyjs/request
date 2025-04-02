@@ -65,12 +65,15 @@ describe('xhr adapter', () => {
       abort: vi.fn(),
     })) as any;
 
+    // const original = ErrorCodes.ERR_TIMEOUT;
+    // ErrorCodes.ERR_TIMEOUT = { value: 'error timeout' as any };
     const config: OxiosRequestConfig = {
       url: '/test',
       method: 'GET',
       timeout: 1000,
     };
     await expect(xhr(config)).rejects.toThrow('Timeout of 1000 ms exceeded');
+    // ErrorCodes.ERR_TIMEOUT = original;
   });
 
   it('should handle cancellation', async () => {
@@ -178,10 +181,82 @@ describe('xhr adapter', () => {
     expect(result.data).toEqual(mockResponse.response);
   });
 
-  it.todo('should handle onDownloadProgress callback', async () => {
+  it('should handle onDownloadProgress callback', async () => {
+    const mockResponse = {
+      status: 200,
+      response: { message: 'success' },
+    };
+
+    global.XMLHttpRequest = vi.fn(() => ({
+      open: vi.fn(),
+      send: vi.fn(function (this: XMLHttpRequest | any) {
+        this.readyState = 4;
+        this.status = mockResponse.status;
+        this.response = mockResponse.response;
+        this.onreadystatechange();
+      }),
+      setRequestHeader: vi.fn(),
+      abort: vi.fn(),
+      responseType: '',
+    })) as any;
+
+    const config1: OxiosRequestConfig = {
+      url: '/test',
+      method: 'GET',
+      responseType: 'json',
+    };
+
+    const config2: OxiosRequestConfig = {
+      url: '/test',
+      method: 'GET',
+      responseType: 'json',
+      onDownloadProgress: vi.fn(),
+    };
+
+    const result1 = await xhr(config1);
+    expect((result1.request as XMLHttpRequest)?.onprogress).not.toBeDefined();
+    const result2 = await xhr(config2);
+    expect((result2.request as XMLHttpRequest)?.onprogress).toBeDefined();
   });
 
-  it.todo('should handle onUploadProgress callback', async () => {
+  it('should handle onUploadProgress callback', async () => {
+    const mockResponse = {
+      status: 200,
+      response: { message: 'success' },
+    };
+
+    global.XMLHttpRequest = vi.fn(() => ({
+      open: vi.fn(),
+      send: vi.fn(function (this: XMLHttpRequest | any) {
+        this.readyState = 4;
+        this.status = mockResponse.status;
+        this.response = mockResponse.response;
+        this.onreadystatechange();
+      }),
+      setRequestHeader: vi.fn(),
+      abort: vi.fn(),
+      upload: {}, // Mock the upload property
+      responseType: '',
+    })) as any;
+
+    const config1: OxiosRequestConfig = {
+      url: '/test',
+      method: 'GET',
+      responseType: 'json',
+    };
+
+    const config2: OxiosRequestConfig = {
+      url: '/test',
+      method: 'GET',
+      responseType: 'json',
+      onUploadProgress: vi.fn(),
+    };
+
+    const result1 = await xhr(config1);
+    expect((result1.request as XMLHttpRequest)?.upload?.onprogress).not.toBeDefined();
+
+    const result2 = await xhr(config2);
+    expect((result2.request as XMLHttpRequest)?.upload?.onprogress).toBeDefined();
   });
 
   it('should handle FormData correctly', async () => {
@@ -211,7 +286,39 @@ describe('xhr adapter', () => {
     expect(mockSetRequestHeader).not.toHaveBeenCalledWith('Content-Type', 'application/json');
   });
 
-  it.todo('should handle xsrfCookieName and xsrfHeaderName correctly', async () => {
+  it('should handle xsrfCookieName and xsrfHeaderName correctly', async () => {
+    const mockHeader = {};
+    const mockGetAllResponseHeaders = vi.fn(() => {
+      let result = '';
+      for (const key in mockHeader) {
+        result += `${key}: ${mockHeader[key]}\n`;
+      }
+      return result;
+    });
+
+    global.XMLHttpRequest = vi.fn(() => ({
+      open: vi.fn(),
+      send: vi.fn(function (this: XMLHttpRequest | any) {
+        this.readyState = 4;
+        this.status = 200;
+        this.getAllResponseHeaders = mockGetAllResponseHeaders;
+        this.onreadystatechange();
+      }),
+      setRequestHeader: vi.fn(),
+      abort: vi.fn(),
+    })) as any;
+
+    document.cookie = 'XSRF-TOKEN=tokenValue';
+    const result = await xhr({
+      url: '/test',
+      method: 'GET',
+      xsrfCookieName: 'XSRF-TOKEN',
+      xsrfHeaderName: 'X-XSRF-TOKEN',
+      headers: mockHeader
+    });
+
+    expect(result.config.headers['X-XSRF-TOKEN']).toBe('tokenValue');
+    expect(result.headers['x-xsrf-token']).toBe('tokenValue');
   });
 
   it('should handle auth correctly', async () => {
@@ -318,5 +425,34 @@ describe('xhr adapter', () => {
     await expect(xhr(config)).rejects.toThrow('canceled');
     expect(mockAbort).toHaveBeenCalled();
     expect(signal.addEventListener).not.toHaveBeenCalled();
+  });
+
+  it('should remove abort event listener when signal is provided', async () => {
+    const mockRemoveEventListener = vi.fn();
+    const signal = {
+      aborted: false,
+      addEventListener: vi.fn(),
+      removeEventListener: mockRemoveEventListener,
+    } as any;
+
+    global.XMLHttpRequest = vi.fn(() => ({
+      open: vi.fn(),
+      send: vi.fn(function (this: XMLHttpRequest | any) {
+        this.readyState = 4;
+        this.status = 200;
+        this.onreadystatechange();
+      }),
+      setRequestHeader: vi.fn(),
+      abort: vi.fn(),
+    })) as any;
+
+    const config: OxiosRequestConfig = {
+      url: '/test',
+      method: 'GET',
+      signal,
+    };
+
+    await xhr(config);
+    expect(mockRemoveEventListener).toHaveBeenCalledWith('abort', expect.any(Function));
   });
 });

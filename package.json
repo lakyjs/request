@@ -37,7 +37,7 @@
     }
   },
   "dependencies": {
-    "onion-interceptor": "^1.0.4"
+    "onion-interceptor": "^1.0.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.3.0",

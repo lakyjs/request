@@ -12,7 +12,7 @@ const mockConfig: OxiosRequestConfig = {
   ...defaults,
 };
 
-describe('oxios', () => {
+describe('oxiosClass', () => {
   it('should initialize with default config', () => {
     const oxios = new Oxios(mockConfig);
     expect(oxios.defaults).toEqual(mockConfig);

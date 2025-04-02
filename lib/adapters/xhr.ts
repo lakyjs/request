@@ -86,7 +86,7 @@ export default isXHRAdapterSupported && function xhr(config: OxiosRequestConfig)
         createError(
           `Timeout of ${timeout} ms exceeded`,
           config,
-          ErrorCodes?.ERR_TIMEOUT?.value,
+          ErrorCodes.ETIMEDOUT.value,
           request
         )
       );
@@ -96,7 +96,7 @@ export default isXHRAdapterSupported && function xhr(config: OxiosRequestConfig)
       request.onprogress = onDownloadProgress;
     }
 
-    if (onUploadProgress) {
+    if (onUploadProgress && request?.upload) {
       request.upload.onprogress = onUploadProgress;
     }
 
