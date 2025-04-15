@@ -1,0 +1,54 @@
+import { Meta, Primary, Controls, Story,Canvas } from "@storybook/blocks";
+import * as ButtonStories from "./Basic.stories";
+
+## Oxios 基础功能
+
+可以向 `oxios` 传递相关配置来创建请求
+
+`oxios(config)`
+
+```javascript
+oxios({
+  url: "/api",
+  method: "get",
+  params: {
+    id: 1,
+  },
+})
+
+oxios({
+  url: "/api",
+  method: "post",
+  data: {
+    id: 1,
+  },
+})
+```
+
+`oxios(url, ?config)`
+
+```javascript
+// 默认方法为 get
+oxios("/api", {
+  params: {
+    id: 1,
+  },
+})
+
+oxios("/api", {
+  method: "post",
+  data: {
+    id: 1,
+  },
+})
+```
+
+<Meta of={ButtonStories} />
+
+## 功能演示 
+<Primary  />
+
+<Controls />
+
+
+

@@ -1,17 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lib example</title>
-  </head>
-  <body>
-    <h1>examples</h1>
-  </body>
 
-  <script type="module">
-    import DummyClass from '@/index'
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lib example</title>
+</head>
 
-    
-  </script>
+<body>
+  <h1>oxios examples</h1>
+  <ul>
+    <li><button id="getBtn">GET</button></li>
+    <li><button id="postBtn">POST</button></li>
+  </ul>
+</body>
+
+<script type="module">
+  import { setupWorker } from 'msw/browser'
+  import { handlers } from './handlers.ts'
+  import oxios from '@/oxios'
+
+  const worker = setupWorker(...handlers)
+  worker.start()
+
+  const getBtn = document.getElementById('getBtn')
+  getBtn?.addEventListener('click', () => {
+    oxios.get('http://bar', { adapter: 'fetch' }).then(res => {
+      console.log(res)
+    })
+  })
+
+  const postBtn = document.getElementById('postBtn')
+  postBtn?.addEventListener('click', () => {
+    oxios.post('http://foo').then(res => {
+      console.log(res)
+    })
+  })
+</script>
+
 </html>

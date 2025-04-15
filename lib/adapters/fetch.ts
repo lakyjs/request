@@ -1,14 +1,29 @@
 import type { Cancel, OxiosPromise, OxiosRequestConfig, OxiosResponse } from '@/types';
 import CancelError from '@/cancel/CancelError';
+import buildFullPath from '@/core/buildFullPath';
 import { createError, ErrorCodes } from '@/core/OxiosError';
 import settle from '@/core/settle';
+import { buildURL } from '@/helpers';
 import { isFunction } from '@/helpers/is';
 
 const isFetchAdapterSupported = typeof fetch !== 'undefined' && isFunction(fetch);
 
 export default isFetchAdapterSupported && function fetchAdapter(config: OxiosRequestConfig): OxiosPromise {
   return new Promise((resolve, reject) => {
-    const { url, method = 'GET', data = null, headers = {}, timeout, cancelToken, signal } = config;
+    const {
+      url,
+      baseURL,
+      params,
+      paramsSerializer,
+      method = 'GET',
+      data = null,
+      responseType,
+      headers = {},
+      timeout,
+      cancelToken,
+      signal,
+      onDownloadProgress,
+    } = config;
 
     const controller = new AbortController();
     const fetchSignal = controller.signal;
@@ -28,7 +43,7 @@ export default isFetchAdapterSupported && function fetchAdapter(config: OxiosReq
     };
 
     const fetchOptions: RequestInit = {
-      method,
+      method: method.toUpperCase(),
       headers: (headers as any),
       body: (data as any),
       signal: fetchSignal,
@@ -48,16 +63,55 @@ export default isFetchAdapterSupported && function fetchAdapter(config: OxiosReq
       }
     }
 
-    fetch(url!, fetchOptions)
-      .then(response => {
+    fetch(buildURL(buildFullPath(baseURL, url!), params, paramsSerializer), fetchOptions)
+      .then(async response => {
+        const _data = await response[responseType ?? 'json']?.();
         const oxiosResponse: OxiosResponse = {
-          data: response.json(),
+          data: _data,
           status: response.status,
           statusText: response.statusText,
           headers: headers ?? {},
           config,
           request: response as any,
         };
+
+        if(onDownloadProgress){
+          const contentLength = response.headers.get('Content-Length');
+          const totalBytes = contentLength ? parseInt(contentLength, 10) : void 0;
+          let loadedBytes = 0;
+          const reader = response.body?.getReader();
+
+          const stream = new ReadableStream({
+            start(controller) {
+              function push(){
+                reader?.read().then(({ done, value }) => {
+                  if(done){
+                    controller.close();
+                    return;
+                  }
+
+                  loadedBytes += value.byteLength;
+                  const progress = totalBytes ? (loadedBytes / totalBytes) * 100 : void 0;
+                  const progressEvent = {
+                    loaded: loadedBytes,
+                    total: totalBytes,
+                    progress,
+                    bytes: value,
+                    config
+                  } as any;
+
+                  onDownloadProgress?.(progressEvent as ProgressEvent);
+                  controller.enqueue(value);
+                  push();
+                })
+              }
+              push()
+            }
+          })
+
+          oxiosResponse.data = stream as any;
+        }
+
 
         settle(
           val => {

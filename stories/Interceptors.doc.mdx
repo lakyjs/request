@@ -1,0 +1,78 @@
+import { Meta, Primary, Controls,Canvas } from "@storybook/blocks";
+import * as InterceptorsStories from "./Interceptors.stories";
+
+<Meta of={InterceptorsStories} />
+
+## Oxios 拦截器
+
+oxios 提供洋葱拦截器和axios拦截器两种用法
+
+### 洋葱拦截器
+
+可以用类似 Koa 中间件的方式写请求拦截器，执行顺序也遵循洋葱模型
+
+```javascript
+import oxios from "oxios";
+
+const interceptor1 = async(_ctx,next)=> {
+  console.log("interceptor1 in");
+  await next()
+  console.log("interceptor1 out");
+}
+
+const interceptor2 = async(_ctx,next)=> {
+  console.log("interceptor2 in");
+  await next()
+  console.log("interceptor2 out");
+}
+
+const interceptor3 = async(_ctx,next)=> {
+  console.log("interceptor3 in");
+  await next()
+  console.log("interceptor3 out");
+}
+
+oxios.create(config)
+
+oxios.interceptors.use(interceptor1,interceptor2,interceptor3)
+// or oxios.interceptors.use(interceptor1).use(interceptor2).use(interceptor3)
+
+
+/**
+ * 洋葱模型
+ * interceptor1 in
+ * interceptor2 in
+ * interceptor3 in
+ * interceptor3 out
+ * interceptor2 out
+ * interceptor1 out
+ */
+
+```
+
+<Canvas of={InterceptorsStories.Onion}/>
+
+### 常规拦截器
+
+当然可以用类似 axios 的方式写请求拦截器
+
+```javascript
+import oxios from "oxios";
+oxios.create(config)
+oxios.interceptors.request.use(config=>{
+  console.log("interceptor1 in");
+  return config
+},error=>{
+  console.log("interceptor1 error");
+  return Promise.reject(error)
+})
+oxios.interceptors.request.use(res=>{
+  console.log("interceptor2 in");
+  return res
+},error=>{
+  console.log("interceptor2 error");
+  return Promise.reject(error)
+})
+```
+
+<Canvas of={InterceptorsStories.Normal}/>

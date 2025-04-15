@@ -1,0 +1,79 @@
+.storybook-button {
+  display: inline-block;
+  cursor: pointer;
+  border: 0;
+  border-radius: 3em;
+  font-weight: 700;
+  line-height: 1;
+  font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.storybook-button--primary {
+  background-color: #555ab9;
+  color: white;
+}
+.storybook-button--secondary {
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+  background-color: transparent;
+  color: #333;
+}
+.storybook-button--small {
+  padding: 10px 16px;
+  font-size: 12px;
+}
+.storybook-button--medium {
+  padding: 11px 20px;
+  font-size: 14px;
+}
+.storybook-button--large {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.storybook-input {
+  display: inline-block;
+  width: 100%; /* 默认宽度为 100%，可根据需要调整 */
+  padding: 12px 16px; /* 默认内边距 */
+  font-size: 14px; /* 默认字体大小 */
+  font-weight: 400; /* 字体粗细 */
+  line-height: 1.5; /* 行高 */
+  color: #333; /* 文字颜色 */
+  background-color: #fff; /* 背景颜色 */
+  border: 1px solid #ccc; /* 边框颜色 */
+  border-radius: 4px; /* 圆角 */
+  box-sizing: border-box; /* 确保宽度包含内边距和边框 */
+  font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; /* 字体 */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* 平滑过渡效果 */
+}
+
+.storybook-input:focus {
+  outline: none; /* 去掉默认的焦点边框 */
+  border-color: #555ab9; /* 焦点时的边框颜色 */
+  box-shadow: 0 0 0 2px rgba(85, 90, 185, 0.3); /* 焦点时的阴影效果 */
+}
+
+.storybook-input--small {
+  padding: 10px 12px; /* 小尺寸的内边距 */
+  font-size: 12px; /* 小尺寸的字体大小 */
+}
+
+.storybook-input--medium {
+  padding: 11px 14px; /* 中等尺寸的内边距 */
+  font-size: 14px; /* 中等尺寸的字体大小 */
+}
+
+.storybook-input--large {
+  padding: 12px 16px; /* 大尺寸的内边距 */
+  font-size: 16px; /* 大尺寸的字体大小 */
+}
+
+.storybook-input--primary {
+  background-color: #f0f0f0; /* 主要输入框的背景颜色 */
+  border-color: #555ab9; /* 主要输入框的边框颜色 */
+  color: #555ab9; /* 主要输入框的文字颜色 */
+}
+
+.storybook-input--secondary {
+  background-color: #fff; /* 次要输入框的背景颜色 */
+  border-color: #ccc; /* 次要输入框的边框颜色 */
+  color: #333; /* 次要输入框的文字颜色 */
+}
